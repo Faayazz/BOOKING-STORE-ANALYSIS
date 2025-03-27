@@ -50,87 +50,92 @@ The following steps were performed using SQL to prepare the data for analysis:
 *   **Derived Column Creation:**
     *   A `Booking_Month_Year` column was created to extract the month and year from the `Booking_Date` for easier trend analysis.
 
-The SQL queries used for data cleaning and preparation are:
 
-```sql
--- Create Database
-CREATE DATABASE assessment;
+ Report Design
 
--- Create Table Bookings
-CREATE TABLE bookings (
-    Booking_ID VARCHAR(50) PRIMARY KEY,
-    Customer_ID INT,
-    Customer_Name NVARCHAR(100),
-    Booking_Type NVARCHAR(50),
-    Booking_Date DATE,
-    Status NVARCHAR(50),
-    Class_Type NVARCHAR(50),
-    Instructor NVARCHAR(100),
-    Time_Slot NVARCHAR(50),
-    [Duration (mins)] INT,
-    Price DECIMAL(10,2),
-    Facility NVARCHAR(100),
-    Theme NVARCHAR(100),
-    Subscription_Type NVARCHAR(50),
-    Service_Name NVARCHAR(100),
-    Service_Type NVARCHAR(50),
-    Customer_Email NVARCHAR(100),
-    Customer_Phone NVARCHAR(20)
-);
+The interactive dashboard consists of two pages:
 
--- Data Insertion into Database Server
-BULK INSERT bookings
-FROM 'C:\Users\fayaz\Downloads\DataAnalyst_Assesment_Dataset.csv'
-WITH (
-    FORMAT = 'CSV',
-    FIRSTROW = 2,
-    FIELDTERMINATOR = ',',
-    ROWTERMINATOR = '\n',
-    TABLOCK
-);
+## Page 1: Booking Overview & Key Metrics
 
--- Handle Missing Values: Fill Missing Facility Based on Booking Type
-UPDATE bookings
-SET Facility = (
-    SELECT TOP 1 Facility
-    FROM bookings
-    WHERE Booking_Type = bookings.Booking_Type AND Facility IS NOT NULL
-    GROUP BY Facility
-    ORDER BY COUNT(*) DESC
-)
-WHERE Facility IS NULL;
+Key Performance Indicators (KPIs) - Card Visuals:
 
--- Updating Null Facility Values:
-UPDATE bookings
-SET Facility = Service_Name
-WHERE Facility IS NULL;
+Total Revenue: Displays the total revenue generated from all bookings (SUM(Price)).
 
--- Standardizing Status Values
-UPDATE bookings
-SET Status = 'Confirmed'
-WHERE Status IN ('confirmed', 'CONFIRM', 'Confirm');
+Total Bookings: Shows the total number of bookings (COUNT(Booking_ID)).
 
-UPDATE bookings
-SET Status = 'Pending'
-WHERE Status IN ('PENDING', 'Pending', 'pend');
+Average Revenue: Represents the average revenue per booking (AVERAGE(Price)).
 
--- Cleaning Phone Numbers
-UPDATE bookings
-SET Customer_Phone = REPLACE(REPLACE(REPLACE(Customer_Phone, '-', ''), ' ', ''), '(', '');
+Slicers (Dropdown Filters) for User Interaction:
 
--- Updating NULL VALUES in THEME
-UPDATE bookings
-SET Theme = 'No theme'
-WHERE Theme IS NULL;
+Status: Allows filtering based on booking confirmation status (e.g., Pending, Confirmed, Canceled). Field Used: Status
 
--- Create a Month-Year Column for Filtering in Power BI
-ALTER TABLE bookings ADD Booking_Month_Year VARCHAR(20);
-UPDATE bookings
-SET Booking_Month_Year = FORMAT(Booking_Date, 'MMM yyyy');
-Use code with caution.
-Markdown
+Booking Month: Enables filtering bookings by month and year. Field Used: Booking_Month_Year (Measure)
 
+Line Charts for Trend Analysis:
+
+Count of Bookings Over Time: Tracks the number of bookings per month to identify demand trends. X-axis: Booking_Month_Year; Y-axis: COUNT(Booking_ID)
+
+Price by Booking Month: Shows revenue fluctuations over different months. X-axis: Booking Date; Y-axis: SUM(Price)
+
+Pie Chart for Booking by Theme:
+
+Booking Count by Theme: Provides a visual breakdown of booking count by Theme. Values: COUNT(Booking_ID); Legend: Theme
+
+Stacked Line Chart for Revenue Breakdown:
+
+Revenue by Booking Type: Compares revenue distribution among different types of bookings (e.g., Classes, Facility Rentals, Subscriptions). X-axis: Booking Type; Y-axis: SUM(Price)
+
+Clustered Bar Chart for Facility-Based Revenue:
+
+Revenue by Facility: Highlights which facilities generate the most revenue. X-axis: Facility; Y-axis: SUM(Price)
+
+## Page 2: Booking Insights & Revenue Analysis
+
+Donut Chart - Revenue by Service Type:
+
+Displays the revenue distribution across different service types (e.g., Play area, Party room, Gymnastics, Dance, Art). Legend: Service_Type; Values: SUM(Price)
+
+Clustered Bar Chart - Count of Bookings by Class Type:
+
+Shows the total number of bookings for each class type (e.g., Art, Gymnastics, Yoga). X-axis: Class_Type; Y-axis: COUNT(Booking_ID)
+
+Stacked Bar Chart - Revenue by Instructor:
+
+Analyzes revenue contributions by each instructor, helping to evaluate their performance. X-axis: Instructor; Y-axis: SUM(Price)
+
+Table - Instructor Performance:
+
+Provides detailed insights into each instructor’s performance, including the number of bookings and total revenue generated. Fields: Instructor, Class_Type, COUNT(Booking_ID), SUM(Price)
+
+Table - Service Details:
+
+Displays available services along with their service type and associated themes. Fields: Service_Name, Service_Type, Theme
+
+# Key Learnings
+
+This project provided valuable experience in:
+
+Data cleaning and preprocessing using SQL.
+
+Designing and implementing interactive dashboards in Power BI.
+
+Identifying key performance indicators (KPIs) relevant to a multi-service business.
+
+Visualizing data to reveal trends in bookings, revenue, and customer behavior.
+
+Understanding the importance of data quality and consistency for accurate analysis.
+
+Analyzing instructor performance and its impact on revenue.
+
+# Usage
+
+This dashboard is designed to be used by:
+
+Management: To gain a high-level overview of business performance, identify trends, and make strategic decisions.
+
+Department Heads: To analyze performance within specific service areas (e.g., classes, facility rentals) and optimize resource allocation.
 
 Instructors: To understand their individual performance and identify areas for improvement.
 
 Marketing Team: To understand booking patterns and customer preferences, and tailor marketing campaigns accordingly.
+
